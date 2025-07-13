@@ -3,7 +3,14 @@
 int add_book(char lib[][3][50], int *p_total);
 int copy(char *dest, char *copy);
 int print_book(char lib[][3][50], int total, int book_num);
-int search_title(char lib[][3][50], int total, char *p_title);
+
+
+int search_menu(char lib[][3][50], int total);
+
+int search_by_title(char lib[][3][50], int total, char *p_title);
+int search_by_publisher(char lib[][3][50], int total, char *p_publisher);
+int search_by_author(char lib[][3][50], int total, char *p_author);
+
 int compare(char *arr1, char *arr2);
 int change_buffer(char *input);
 
@@ -20,11 +27,10 @@ int main() {
     while (command != 0) {
 
         printf("\nHow can I help you?\n\n");
-        printf("Exit : 0\n")
+        printf("Exit : 0\n");
         printf("Add book: 1 \n");
-        printf("View book: 2 \n");
-        printf("Search by Title: 3 \n");
-        printf("Command : ");
+        printf("Search book: 2 \n");
+        printf(": ");
         scanf("%d", &command); //get user's input
         getchar();  //getting rid of \0 from the stdin => preventing unintentional input
 
@@ -37,33 +43,11 @@ int main() {
                 add_book(library, &total);
                 break;
             case 2:
-            {
-                int book_num;
-
-                printf("\n");
-                printf("Type the number of the book: ");
-                scanf("%d", &book_num);
-
-                print_book(library, total, book_num);
+                search_menu(library, total);
                 break;
-            }
-        
-            case 3:
-            {
-                printf("\n");
-                char title[50];
-                printf("What's the title of the book?\n");
-                fgets(title, 50, stdin);
-
-                change_buffer(title);
-                
-                search_title(library, total, title);
-                break;
-            }
-                
                 
             default:
-                printf("Wrong Command\n");
+                printf("Error: Wrong Command\n");
                 break;
         }
     
@@ -74,18 +58,149 @@ int main() {
 
 }
 
-int search_title(char lib[][3][50], int total, char *p_title) {
+int search_menu(char lib[][3][50], int total) {   //Search shouldn't change the value of total, so it shouldn't be a pointer
+    int option = 1;
+
+    
+
+    while (option != 0) {
+        
+        //User Interface
+        printf("\n-----------Search Options:-----------\n\n");
+        printf("Back : 0\n");
+        printf("Search by Book Number: 1 \n");
+        printf("Search by Title: 2 \n");
+        printf("Search by Author: 3 \n");
+        printf("Search by Publisher : 4 \n");
+        
+        printf("\n");
+        scanf("%d", &option); //get user's input
+        getchar();  //getting rid of \0 from the stdin => preventing unintentional input
+
+        switch(option) {
+            case 0: 
+                return 0; 
+                
+            case 1:
+
+                {
+                    int book_num;
+
+                    printf("\n");
+                    printf("Book Number: ");
+                    scanf("%d", &book_num);
+                    print_book(lib, total, book_num);
+                    break;
+                }
+                
+            case 2:
+
+                {
+                    char title[50];
+
+                    printf("\n");
+                    printf("Title : \n");
+                    fgets(title, 50, stdin);
+                    change_buffer(title);
+                    
+                    search_by_title(lib, total, title);
+                    break;
+                }
+
+            case 3:
+                {
+                    char author[50];
+
+                    printf("\n");
+                    printf("Author : ");
+                    fgets(author, 50, stdin);
+                    change_buffer(author);
+                    
+                    search_by_author(lib, total, author);
+                    break;
+                }
+
+            case 4:
+
+                {
+                    char publisher[50];
+
+                    printf("\n");
+                    printf("Publisher : ");
+                    fgets(publisher, 50, stdin);
+                    change_buffer(publisher);
+                    
+                    search_by_publisher(lib, total, publisher);
+                    break;
+                }
+
+            default:
+                printf("Wrong Command\n");
+                break;
+            
+
+        }
+
+    }
+
+    return 0;
+    
+}
+
+int search_by_title(char lib[][3][50], int total, char *p_title) {
     int i;
 
     for (i = 0; i < total; i++) {
         if (compare(lib[i][0], p_title)) {
-            
+
             print_book(lib, total, i+1);
             return 0;
         } 
     } 
 
-    printf("\n\"%s\" doesn't exist in our databse.\n", p_title);
+    printf("\nSorry, \"%s\" doesn't exist in our databse.\n", p_title);
+    return 0;
+
+}
+
+int search_by_author(char lib[][3][50], int total, char *p_author) {
+    int i;
+    int is_exist = 0;
+
+    for (i = 0; i < total; i++) {
+        if (compare(lib[i][1], p_author)) {
+
+            is_exist = 1;
+            print_book(lib, total, i+1);
+            
+        } 
+    } 
+
+    if (is_exist == 0) {
+        printf("\nSorry, we don't have any book written by %s.\n", p_author);
+    }   
+    
+    return 0;
+
+}
+
+int search_by_publisher(char lib[][3][50], int total, char *p_publisher) {
+    int i;
+    int is_exist = 0;
+
+    for (i = 0; i < total; i++) {
+        if (compare(lib[i][2], p_publisher)) {
+
+            is_exist = 1;
+            print_book(lib, total, i+1);
+            
+        } 
+    } 
+
+    if (is_exist == 0) {
+        printf("\nSorry, we don't have any book published by %s\n", p_publisher);
+    } 
+    
     return 0;
 
 }
@@ -105,13 +220,14 @@ int print_book(char lib[][3][50], int total, int book_num) {
         return 0;
     }
 
-    printf("\n------------ BOOK %d -----------------\n", book_num);
+    printf("\n------------ BOOK #%d -----------------\n", book_num);
     printf("Title : %s \n", lib[book_num-1][0]);
     printf("Author : %s \n", lib[book_num-1][1]);
     printf("Publisher : %s \n", lib[book_num-1][2]);
 
     return 0;
 }
+
 
 int add_book(char lib[][3][50], int *p_total) {
     int i = 0;
@@ -167,7 +283,6 @@ int compare(char *arr1, char *arr2) {
             return 0;
         }
 
-        printf("1: %c 2: %c\n", arr1[i], arr2[i]);
         i++;
     }
 
