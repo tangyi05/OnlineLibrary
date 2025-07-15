@@ -11,12 +11,15 @@ int search_by_title(char lib[][3][50], int total, char *p_title);
 int search_by_publisher(char lib[][3][50], int total, char *p_publisher);
 int search_by_author(char lib[][3][50], int total, char *p_author);
 int rent_book(char lib[][3][50], int *total, char rent[][3][50], int *rent_total);
+int return_book(char lib[][3][50], int *total, char rent[][3][50], int *rent_total);
 
 int transition();
 int copy(char *dest, char *copy);
 int compare(char *arr1, char *arr2);
 int change_buffer(char *input);
 int valid_book_num(int book_num, int total);
+int not_y_or_n(char answer);
+
 
 int main() {    
     char library[100][3][50];   //Storage for book
@@ -26,7 +29,8 @@ int main() {
     int rent_total= 0, total = 0;
 
         printf("Welcome to Kim's Library!\n\n");
-        printf("Total Books : %d \n", total);
+        printf("Books Available : %d \n", total);
+        printf("Books Rented : %d \n", rent_total);
     // Loop to keep the program running
     while (command != 0) {
 
@@ -36,10 +40,11 @@ int main() {
         printf("Total Books : %d \n\n", total);
 
         printf("Exit : 0\n");
-        printf("Available Book Catalog: 1 \n");
-        printf("Add book: 2 \n");
-        printf("Search book: 3 \n");
-        printf("Rent book: 4 \n");
+        printf("Book Catalog : 1 \n");
+        printf("Add book : 2 \n");
+        printf("Search book : 3 \n");
+        printf("Rent book : 4 \n");
+        printf("Return book : 5 \n");
         printf(": ");
         scanf("%d", &command); //get user's input
         getchar();  //getting rid of \0 from the stdin => preventing unintentional input
@@ -70,6 +75,11 @@ int main() {
             case 4:
 
                 rent_book(library, &total, rented, &rent_total);
+                break;
+
+            case 5:
+
+                return_book(library, &total, rented, &rent_total);
                 break;
 
             default:
@@ -248,7 +258,6 @@ int search_menu(char lib[][3][50], int total) {   //Search shouldn't change the 
 }
 
 
-
 int search_by_title(char lib[][3][50], int total, char *p_title) {
     int i;
     int is_exist = 0;
@@ -389,10 +398,18 @@ int add_book(char lib[][3][50], int *p_total) {
 }
 
 int rent_book(char lib[][3][50], int *total, char rent[][3][50], int *rent_total) {
-    int book_num = -1;
+    int book_num;
     char confirm = ' ';
-    printf("\n");
-    printf("Type a book number: ");
+    
+    available_book_catalog(lib, *total);
+
+    //Allowing user to return to the lobby if there isn't any book available
+    if (*total <= 0) {
+        transition();
+        return 0;
+    }
+
+    printf("\nType a book number: ");
     scanf("%d", &book_num);
 
     while (!valid_book_num(book_num, *total)) {
@@ -404,23 +421,17 @@ int rent_book(char lib[][3][50], int *total, char rent[][3][50], int *rent_total
     print_book(lib, *total, book_num);
     getchar();
 
-    //이거 Y/N 리턴하는거 함수로 바꾸기
-    while (confirm != 'Y' && confirm != 'N') {
+    do {
         printf("\n");
         printf("Do you want to rent this book? (Y/N)\n");
         printf(": ");
         scanf("%c", &confirm);
 
-        if (confirm != 'Y' && confirm != 'N') {
-            printf("confirm : %c", confirm);
-            printf("Error: Wrong Command\n");
-        }
-    }
+    } while (not_y_or_n(confirm));
 
     if (confirm == 'N') {
             return 0;
         } 
-    // 여기까지 바꿀 수 있을듯
 
     //Moving a book from library to rented
     copy(rent[*rent_total][0], lib[book_num-1][0]);
@@ -440,6 +451,59 @@ int rent_book(char lib[][3][50], int *total, char rent[][3][50], int *rent_total
 
     return 0;
 
+}
+
+int return_book(char lib[][3][50], int *total, char rent[][3][50], int *rent_total) {
+    int book_num;
+    char confirm = ' ';
+
+    rented_book_catalog(rent, *rent_total);
+
+    if (*rent_total <= 0) {
+        transition();
+        return 0;
+    }
+
+    printf("\nType a book number \n");
+    printf(": ");
+    scanf("%d", &book_num);
+
+    while (!valid_book_num(book_num, *rent_total)) {
+        printf("\n");
+        printf("Type a book number : ");
+        scanf("%d", &book_num);
+    };
+
+    print_book(rent, *rent_total, book_num);
+    getchar();
+
+    do {
+        printf("\n");
+        printf("Do you want to return this book? (Y/N)\n");
+        printf(": ");
+        scanf("%c", &confirm);
+
+    } while (not_y_or_n(confirm));
+
+    if (confirm == 'N') {
+            return 0;
+        } 
+    
+    copy(lib[*total][0], rent[book_num-1][0]);
+    copy(lib[*total][1], rent[book_num-1][1]);
+    copy(lib[*total][2], rent[book_num-1][2]);
+
+    for (; book_num < *rent_total; book_num++) {
+        
+        copy(rent[book_num-1][0], rent[book_num][0]);
+        copy(rent[book_num-1][1], rent[book_num][1]);
+        copy(rent[book_num-1][2], rent[book_num][2]);
+    }
+
+    (*total)++;
+    (*rent_total)--;
+
+    return 0;
 }
 
 
@@ -487,7 +551,6 @@ int compare(char *arr1, char *arr2) {
     return 1;
 }
 
-
 int valid_book_num(int book_num, int total) {
 
     if (total < book_num && book_num <= 100) {
@@ -528,4 +591,16 @@ int change_buffer(char *input) {
         i++;
     }
     return 0;
+}
+
+int not_y_or_n(char answer) {
+
+    if (answer != 'Y' && answer != 'N') {
+        printf("confirm : %c", answer);
+        printf("\nError: Wrong Command\n");
+        return 1;
+    }
+    
+    return 0; 
+
 }
