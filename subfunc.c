@@ -4,13 +4,11 @@
 
 //**MINOR FUNCTIONS (Handling string, buffer)
 
-int transition() {
+void transition() {
     char any_key[2];
     printf("\n");
     printf("<Press Enter>");
     scanf("%c", &any_key[0]);
-
-    return 0;
 }
 
 int copy(char *dest, char *copy) {
@@ -71,7 +69,7 @@ int valid_book_num(int book_num, int total) {
     return 1;
 }
 
-int change_buffer(char *input) {
+void change_buffer(char *input) {
 
     //Function for handling \n that gets automatically added to fgets() command.
     //Turns \n -> \0 : preventing line switch
@@ -85,7 +83,6 @@ int change_buffer(char *input) {
         }
         i++;
     }
-    return 0;
 }
 
 int not_y_or_n(char answer) {

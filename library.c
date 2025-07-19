@@ -1,26 +1,29 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "mainfunc.h"
 #include "subfunc.h"
-#include "mainfunc.c"
-#include "subfunc.c"
+
 
 int main() {    
-    char library[100][3][50];   //Storage for book
-    char rented[100][3][50];    //Storage for rented book
+    BOOK *library;
     int command = 1;    //User's input (initially set 0 because of while command below)
     int i = 0, j = 0;
-    int rent_total= 0, total = 0;
+    int total = 0;
+    int borrowed = 0, available = 0;
 
-        printf("Welcome to Kim's Library!\n\n");
-        printf("Books Available : %d \n", total);
-        printf("Books Rented : %d \n", rent_total);
+    library = (BOOK *)malloc(sizeof(BOOK) * 100);
+
+    printf("Welcome to Kim's Library!\n\n");
     // Loop to keep the program running
-    while (command != 0) {
+
+    while (1) {
 
         //Lobby UI
         
         printf("\nHow can I help you?\n");
-        printf("Total Books : %d \n\n", total);
+        printf("Total : %d \n", total);
+        printf("Available : %d \n", available);
+        printf("Borrowed : %d \n\n", borrowed); 
 
         printf("Exit : 0\n");
         printf("Book Catalog : 1 \n");
@@ -37,36 +40,31 @@ int main() {
 
                 printf("Turning Off...\n");
                 return 0;
-                
+
             case 1:
-
-                printf("\n");
-                book_catalog(library, total, rented, rent_total);
+                book_catalog(library, total, available, borrowed);
                 break;
-
+                
             case 2:
-
                 printf("\n");
-                add_book(library, &total); //Pointer -> adding book changes the total
+                add_book(library, &available); //Pointer -> adding book changes the total
+                total = available + borrowed;
                 break;
 
             case 3:
-
-                search_menu(library, total);
+                search_menu(library, available);
                 break;
 
             case 4:
-
-                rent_book(library, &total, rented, &rent_total);
+                rent_book(library, total, &available, &borrowed);
+                total = available + borrowed;
                 break;
 
             case 5:
-
-                return_book(library, &total, rented, &rent_total);
+                return_book(library, total, &available, &borrowed);
                 break;
 
             default:
-
                 printf("Error: Wrong Command\n");
                 break;
 
@@ -78,5 +76,4 @@ int main() {
     return 0;
 
 }
-
 
